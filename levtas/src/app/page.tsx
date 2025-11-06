@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { JSX, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -31,37 +31,59 @@ import {
 } from "recharts";
 
 /**
- * Levtas – UI-only demo
- * Frameworks: Next.js (App Router), Tailwind CSS, Framer Motion, Recharts, lucide-react
- *
- * Notes
- * - This file is self-contained UI (no backend). You can drop it into app/page.tsx.
- * - Components are separated below in the same file for easy copy-paste.
- * - Page switching is button-based (Dashboard / History) as requested.
- * - Minimal state & mock data included. Replace with your data layer later.
+ * Levtas – UI-only demo (TypeScript)
+ * - 型注釈を追加した版
  */
 
 // --------------------------- Types & Utils ---------------------------
-const PRIORITY = { low: "低", mid: "中", high: "高" } as const;
-const DIFF_LABEL = ["かんたん", "やさしめ", "ふつう", "むずかしめ", "激ムズ"];
+type Priority = "low" | "mid" | "high";
+type Status = "todo" | "doing" | "done";
 
-function classNames(...xs) {
+export interface Task {
+  id: string;
+  title: string;
+  category: string;
+  priority: Priority;
+  difficulty: number; // 0..4
+  status: Status;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface Level {
+  current: number;
+  xp: number;
+  xpForNext: number;
+}
+
+export interface Filters {
+  q: string;
+  status: "all" | Status;
+  category: "all" | string;
+}
+
+const PRIORITY: Record<Priority, string> = { low: "低", mid: "中", high: "高" };
+const DIFF_LABEL = ["かんたん", "やさしめ", "ふつう", "むずかしめ", "激ムズ"] as const;
+
+function classNames(...xs: Array<string | false | null | undefined>): string {
   return xs.filter(Boolean).join(" ");
 }
 
-function formatDate(d) {
+function formatDate(d?: string | number | Date): string {
   try {
-    return new Date(d).toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
+    if (!d) return "-";
+    const date = typeof d === "string" || typeof d === "number" ? new Date(d) : d;
+    return date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
   } catch {
     return "-";
   }
 }
 
 // XP = difficulty * 10 by default
-const xpForDifficulty = (diff) => (diff + 1) * 10;
+const xpForDifficulty = (diff: number): number => (diff + 1) * 10;
 
 // --------------------------- Sample Data ---------------------------
-const initialTasks = [
+const initialTasks: Task[] = [
   {
     id: "t1",
     title: "アルゴリズム課題 A",
@@ -112,20 +134,20 @@ const initialTasks = [
 ];
 
 // --------------------------- Root Component ---------------------------
-export default function LevtasUI() {
-  const [activePage, setActivePage] = useState("dashboard");
-  const [tasks, setTasks] = useState(initialTasks);
-  const [level, setLevel] = useState({ current: 3, xp: 25, xpForNext: 100 });
-  const [filters, setFilters] = useState({ q: "", status: "all", category: "all" });
-  const [showAdd, setShowAdd] = useState(false);
+export default function LevtasUI(): JSX.Element {
+  const [activePage, setActivePage] = useState<"dashboard" | "history">("dashboard");
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [level, setLevel] = useState<Level>({ current: 3, xp: 25, xpForNext: 100 });
+  const [filters, setFilters] = useState<Filters>({ q: "", status: "all", category: "all" });
+  const [showAdd, setShowAdd] = useState<boolean>(false);
 
   // Derived data
   const completed = tasks.filter((t) => t.status === "done");
   const todo = tasks.filter((t) => t.status !== "done");
 
-  const categories = useMemo(() => Array.from(new Set(tasks.map((t) => t.category))), [tasks]);
+  const categories = useMemo<string[]>(() => Array.from(new Set(tasks.map((t) => t.category))), [tasks]);
 
-  const filteredTasks = useMemo(() => {
+  const filteredTasks = useMemo<Task[]>(() => {
     return tasks.filter((t) => {
       if (filters.status !== "all" && t.status !== filters.status) return false;
       if (filters.category !== "all" && t.category !== filters.category) return false;
@@ -134,9 +156,10 @@ export default function LevtasUI() {
     });
   }, [tasks, filters]);
 
-  const dailySeries = useMemo(() => {
+  type DailyPoint = { date: string; 完了: number };
+  const dailySeries = useMemo<DailyPoint[]>(() => {
     // last 14 days completed per day
-    const days = [...Array(14)].map((_, i) => {
+    const days: DailyPoint[] = [...Array(14)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (13 - i));
       const key = d.toDateString();
@@ -146,28 +169,31 @@ export default function LevtasUI() {
     return days;
   }, [completed]);
 
-  const categorySeries = useMemo(() => {
-    const map = new Map();
+  type CategoryPoint = { name: string; value: number };
+  const categorySeries = useMemo<CategoryPoint[]>(() => {
+    const map = new Map<string, number>();
     completed.forEach((t) => map.set(t.category, (map.get(t.category) || 0) + 1));
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [completed]);
 
-  const handleAddTask = (payload) => {
+  const handleAddTask = (payload: Omit<Task, "id" | "createdAt" | "status"> & { title: string; priority: Priority; difficulty: number; category: string }) => {
     const id = `t${Math.random().toString(36).slice(2, 8)}`;
-    setTasks((xs) => [{ id, status: "todo", createdAt: new Date().toISOString(), ...payload }, ...xs]);
+    const newTask: Task = { id, status: "todo", createdAt: new Date().toISOString(), ...payload };
+    setTasks((xs) => [newTask, ...xs]);
     setShowAdd(false);
   };
 
-  const handleDeleteTask = (id) => setTasks((xs) => xs.filter((t) => t.id !== id));
+  const handleDeleteTask = (id: string) => setTasks((xs) => xs.filter((t) => t.id !== id));
 
-  const handleToggleDone = (id) => {
+  const handleToggleDone = (id: string) => {
     setTasks((xs) =>
       xs.map((t) => {
         if (t.id !== id) return t;
         if (t.status === "done") {
-          return { ...t, status: "todo", completedAt: undefined };
+          const copy = { ...t, status: "todo" as Status, completedAt: undefined };
+          return copy;
         }
-        return { ...t, status: "done", completedAt: new Date().toISOString() };
+        return { ...t, status: "done" as Status, completedAt: new Date().toISOString() };
       })
     );
 
@@ -176,11 +202,12 @@ export default function LevtasUI() {
     if (!task) return;
     const gain = task.status === "done" ? -xpForDifficulty(task.difficulty) : xpForDifficulty(task.difficulty);
     setLevel((L) => {
-      let cur = { ...L, xp: L.xp + gain };
-      // normalize
+      let cur: Level = { ...L, xp: L.xp + gain };
+      // normalize up
       while (cur.xp >= cur.xpForNext) {
         cur = { current: cur.current + 1, xp: cur.xp - cur.xpForNext, xpForNext: Math.round(cur.xpForNext * 1.2) };
       }
+      // normalize down
       while (cur.xp < 0 && cur.current > 1) {
         const prevCap = Math.round(cur.xpForNext / 1.2);
         cur = { current: cur.current - 1, xp: prevCap + cur.xp, xpForNext: prevCap };
@@ -192,12 +219,7 @@ export default function LevtasUI() {
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-white to-gray-50 text-gray-900">
-      <Header
-        active={activePage}
-        onChange={setActivePage}
-        onOpenAdd={() => setShowAdd(true)}
-        level={level}
-      />
+      <Header active={activePage} onChange={setActivePage} onOpenAdd={() => setShowAdd(true)} level={level} />
 
       <main className="mx-auto max-w-6xl px-4 pb-24">
         {activePage === "dashboard" ? (
@@ -215,27 +237,26 @@ export default function LevtasUI() {
             onDeleteTask={handleDeleteTask}
           />
         ) : (
-          <History
-            tasks={tasks}
-            completed={completed}
-            categorySeries={categorySeries}
-            onToggleDone={handleToggleDone}
-            onDeleteTask={handleDeleteTask}
-          />
+          <History tasks={tasks} completed={completed} categorySeries={categorySeries} onToggleDone={handleToggleDone} onDeleteTask={handleDeleteTask} />
         )}
       </main>
 
       <AnimatePresence>
-        {showAdd && (
-          <AddTaskDialog onClose={() => setShowAdd(false)} onSubmit={handleAddTask} categories={categories} />
-        )}
+        {showAdd && <AddTaskDialog onClose={() => setShowAdd(false)} onSubmit={handleAddTask} categories={categories} />}
       </AnimatePresence>
     </div>
   );
 }
 
 // --------------------------- Header & Nav ---------------------------
-function Header({ active, onChange, onOpenAdd, level }) {
+type HeaderProps = {
+  active: "dashboard" | "history";
+  onChange: (p: "dashboard" | "history") => void;
+  onOpenAdd: () => void;
+  level: Level;
+};
+
+function Header({ active, onChange, onOpenAdd, level }: HeaderProps): JSX.Element {
   return (
     <div className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/90 border-b border-gray-100">
       <div className="mx-auto max-w-6xl px-4">
@@ -258,10 +279,7 @@ function Header({ active, onChange, onOpenAdd, level }) {
 
           <div className="flex items-center gap-2">
             <LevelBadge level={level} />
-            <button
-              onClick={onOpenAdd}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow"
-            >
+            <button onClick={onOpenAdd} className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow">
               <Plus className="h-4 w-4" /> 新しいタスク
             </button>
           </div>
@@ -271,7 +289,7 @@ function Header({ active, onChange, onOpenAdd, level }) {
   );
 }
 
-function Logo() {
+function Logo(): JSX.Element {
   return (
     <div className="flex items-center gap-2">
       <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center text-white shadow">
@@ -282,7 +300,10 @@ function Logo() {
   );
 }
 
-function Segmented({ options, value, onChange }) {
+type SegOption = { key: "dashboard" | "history"; label: string; icon: React.ComponentType<any> };
+type SegmentedProps = { options: SegOption[]; value: "dashboard" | "history"; onChange: (k: "dashboard" | "history") => void };
+
+function Segmented({ options, value, onChange }: SegmentedProps): JSX.Element {
   return (
     <div className="inline-flex rounded-2xl bg-gray-100 p-1 shadow-inner">
       {options.map((op) => {
@@ -306,7 +327,7 @@ function Segmented({ options, value, onChange }) {
   );
 }
 
-function LevelBadge({ level }) {
+function LevelBadge({ level }: { level: Level }): JSX.Element {
   const pct = Math.min(100, Math.round((level.xp / level.xpForNext) * 100));
   return (
     <div className="hidden sm:flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-3 py-2 shadow-sm">
@@ -325,21 +346,30 @@ function LevelBadge({ level }) {
   );
 }
 
-function ProgressBar({ value }) {
+function ProgressBar({ value }: { value: number }): JSX.Element {
   return (
     <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
-      <motion.div
-        className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500"
-        initial={{ width: 0 }}
-        animate={{ width: `${value}%` }}
-        transition={{ type: "spring", stiffness: 120, damping: 20 }}
-      />
+      <motion.div className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500" initial={{ width: 0 }} animate={{ width: `${value}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
     </div>
   );
 }
 
 // --------------------------- Dashboard ---------------------------
-function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries, filters, setFilters, filteredTasks, onToggleDone, onDeleteTask }) {
+type DashboardProps = {
+  tasks: Task[];
+  completed: Task[];
+  todo: Task[];
+  level: Level;
+  dailySeries: { date: string; 完了: number }[];
+  categorySeries: { name: string; value: number }[];
+  filters: Filters;
+  setFilters: (f: Filters | ((prev: Filters) => Filters)) => void;
+  filteredTasks: Task[];
+  onToggleDone: (id: string) => void;
+  onDeleteTask: (id: string) => void;
+};
+
+function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries, filters, setFilters, filteredTasks, onToggleDone, onDeleteTask }: DashboardProps): JSX.Element {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       <div className="lg:col-span-2 space-y-6">
@@ -380,15 +410,7 @@ function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries,
           </Card>
         </div>
 
-        <TaskList
-          title="タスク"
-          tasks={filteredTasks}
-          filters={filters}
-          setFilters={setFilters}
-          onToggleDone={onToggleDone}
-          onDeleteTask={onDeleteTask}
-          categories={["all", ...Array.from(new Set(tasks.map((t) => t.category)))]}
-        />
+        <TaskList title="タスク" tasks={filteredTasks} filters={filters} setFilters={setFilters} onToggleDone={onToggleDone} onDeleteTask={onDeleteTask} categories={["all", ...Array.from(new Set(tasks.map((t) => t.category)))]} />
       </div>
 
       <div className="space-y-6">
@@ -419,7 +441,7 @@ function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries,
   );
 }
 
-function StatsRow({ completed, todo, level }) {
+function StatsRow({ completed, todo, level }: { completed: Task[]; todo: Task[]; level: Level }): JSX.Element {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <MetricCard icon={Gauge} title="レベル" value={level.current} subtitle={`XP ${level.xp}/${level.xpForNext}`} />
@@ -429,7 +451,7 @@ function StatsRow({ completed, todo, level }) {
   );
 }
 
-function MetricCard({ icon: Icon, title, value, subtitle }) {
+function MetricCard({ icon: Icon, title, value, subtitle }: { icon: React.ComponentType<any>; title: string; value: number | string; subtitle?: string }): JSX.Element {
   return (
     <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
       <div className="flex items-center justify-between">
@@ -446,7 +468,7 @@ function MetricCard({ icon: Icon, title, value, subtitle }) {
   );
 }
 
-function Card({ title, icon: Icon, children }) {
+function Card({ title, icon: Icon, children }: { title: string; icon: React.ComponentType<any>; children: React.ReactNode }): JSX.Element {
   return (
     <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
       <div className="flex items-center gap-2 mb-3">
@@ -460,11 +482,11 @@ function Card({ title, icon: Icon, children }) {
   );
 }
 
-function Achievement({ icon: Icon, label, value, subtle }) {
+function Achievement({ icon: Icon, label, value, subtle }: { icon: React.ComponentType<any>; label: string; value: string; subtle?: boolean }): JSX.Element {
   return (
     <li className="flex items-center justify-between rounded-2xl border border-gray-100 px-3 py-2">
       <div className="flex items-center gap-2">
-        <div className={classNames("h-8 w-8 grid place-items-center rounded-xl text-white", subtle ? "bg-gray-300" : "bg-gradient-to-br from-orange-400 to-pink-500") }>
+        <div className={classNames("h-8 w-8 grid place-items-center rounded-xl text-white", subtle ? "bg-gray-300" : "bg-gradient-to-br from-orange-400 to-pink-500")}>
           <Icon className="h-4 w-4" />
         </div>
         <span className="text-sm">{label}</span>
@@ -475,20 +497,24 @@ function Achievement({ icon: Icon, label, value, subtle }) {
 }
 
 // --------------------------- Task List ---------------------------
-function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDeleteTask, categories }) {
+type TaskListProps = {
+  title: string;
+  tasks: Task[];
+  filters: Filters;
+  setFilters: (f: Filters | ((prev: Filters) => Filters)) => void;
+  onToggleDone: (id: string) => void;
+  onDeleteTask: (id: string) => void;
+  categories: string[];
+};
+
+function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDeleteTask, categories }: TaskListProps): JSX.Element {
   return (
     <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <h3 className="font-semibold tracking-tight">{title}</h3>
         <div className="flex flex-wrap items-center gap-2">
-          <input
-            type="text"
-            value={filters.q}
-            onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
-            placeholder="検索"
-            className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm"
-          />
-          <Select value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v }))} options={[
+          <input type="text" value={filters.q} onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))} placeholder="検索" className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm" />
+          <Select value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v as Filters["status"] }))} options={[
             { value: "all", label: "すべて" },
             { value: "todo", label: "未完了" },
             { value: "doing", label: "進行中" },
@@ -500,19 +526,9 @@ function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDeleteTas
 
       <ul className="divide-y divide-gray-100">
         {tasks.map((t) => (
-          <motion.li
-            key={t.id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="py-3 grid sm:grid-cols-[1fr_auto] items-start gap-3"
-          >
+          <motion.li key={t.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="py-3 grid sm:grid-cols-[1fr_auto] items-start gap-3">
             <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                checked={t.status === "done"}
-                onChange={() => onToggleDone(t.id)}
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
-              />
+              <input type="checkbox" checked={t.status === "done"} onChange={() => onToggleDone(t.id)} className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
               <div>
                 <div className={classNames("font-medium leading-tight", t.status === "done" && "line-through text-gray-400")}>{t.title}</div>
                 <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-2">
@@ -532,19 +548,17 @@ function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDeleteTas
             </div>
           </motion.li>
         ))}
-        {tasks.length === 0 && (
-          <div className="text-sm text-gray-500 py-8 text-center">条件に一致するタスクがありません</div>
-        )}
+        {tasks.length === 0 && <div className="text-sm text-gray-500 py-8 text-center">条件に一致するタスクがありません</div>}
       </ul>
     </div>
   );
 }
 
-function Badge({ children }) {
+function Badge({ children }: { children: React.ReactNode }): JSX.Element {
   return <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700">{children}</span>;
 }
 
-function Select({ value, onChange, options }) {
+function Select({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }): JSX.Element {
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)} className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm">
       {options.map((o) => (
@@ -555,21 +569,29 @@ function Select({ value, onChange, options }) {
 }
 
 // --------------------------- History ---------------------------
-function History({ tasks, completed, categorySeries, onToggleDone, onDeleteTask }) {
+type HistoryProps = {
+  tasks: Task[];
+  completed: Task[];
+  categorySeries: { name: string; value: number }[];
+  onToggleDone: (id: string) => void;
+  onDeleteTask: (id: string) => void;
+};
+
+function History({ tasks, completed, categorySeries, onToggleDone, onDeleteTask }: HistoryProps): JSX.Element {
   const byDate = useMemo(() => {
-    const map = new Map();
+    const map = new Map<string, Task[]>();
     completed.forEach((t) => {
-      const k = new Date(t.completedAt).toDateString();
+      const k = new Date(t.completedAt ?? "").toDateString();
       map.set(k, (map.get(k) || []).concat(t));
     });
     const rows = Array.from(map.entries())
       .map(([k, arr]) => ({ date: new Date(k), items: arr }))
-      .sort((a, b) => b.date - a.date);
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
     return rows;
   }, [completed]);
 
   const barData = useMemo(() => {
-    const map = new Map();
+    const map = new Map<string, number>();
     tasks.forEach((t) => map.set(t.category, (map.get(t.category) || 0) + 1));
     return Array.from(map.entries()).map(([name, 合計]) => ({ name, 合計 }));
   }, [tasks]);
@@ -649,13 +671,19 @@ function History({ tasks, completed, categorySeries, onToggleDone, onDeleteTask 
 }
 
 // --------------------------- Add Task Dialog ---------------------------
-function AddTaskDialog({ onClose, onSubmit, categories }) {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState(categories[0] || "大学");
-  const [priority, setPriority] = useState("mid");
-  const [difficulty, setDifficulty] = useState(2);
+type AddTaskDialogProps = {
+  onClose: () => void;
+  onSubmit: (payload: { title: string; category: string; priority: Priority; difficulty: number }) => void;
+  categories: string[];
+};
 
-  const handleSubmit = (e) => {
+function AddTaskDialog({ onClose, onSubmit, categories }: AddTaskDialogProps): JSX.Element {
+  const [title, setTitle] = useState<string>("");
+  const [category, setCategory] = useState<string>(categories[0] || "大学");
+  const [priority, setPriority] = useState<Priority>("mid");
+  const [difficulty, setDifficulty] = useState<number>(2);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
     onSubmit({ title, category, priority, difficulty });
@@ -665,12 +693,7 @@ function AddTaskDialog({ onClose, onSubmit, categories }) {
     <motion.div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="absolute inset-0 grid place-items-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 12 }}
-          className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-xl"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold tracking-tight">新しいタスク</h3>
           </div>
@@ -691,12 +714,12 @@ function AddTaskDialog({ onClose, onSubmit, categories }) {
               </div>
               <div className="grid gap-2">
                 <label className="text-sm text-gray-600">優先度</label>
-                <Select value={priority} onChange={setPriority} options={[{ value: "low", label: "低" }, { value: "mid", label: "中" }, { value: "high", label: "高" }]} />
+                <Select value={priority} onChange={(v) => setPriority(v as Priority)} options={[{ value: "low", label: "低" }, { value: "mid", label: "中" }, { value: "high", label: "高" }]} />
               </div>
             </div>
             <div className="grid gap-2">
               <label className="text-sm text-gray-600">難易度（1-5）</label>
-              <input type="range" min={0} max={4} step={1} value={difficulty} onChange={(e) => setDifficulty(parseInt(e.target.value))} className="w-full" />
+              <input type="range" min={0} max={4} step={1} value={difficulty} onChange={(e) => setDifficulty(parseInt(e.target.value, 10))} className="w-full" />
               <div className="text-xs text-gray-500">現在: {difficulty + 1}（{DIFF_LABEL[difficulty]}）</div>
             </div>
             <div className="flex items-center justify-end gap-2 pt-2">
