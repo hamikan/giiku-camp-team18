@@ -30,7 +30,7 @@ type HeaderProps = {
 };
 
 // 画面左上に表示されるロゴ部分
-function Logo(): JSX.Element {
+export function Logo(): JSX.Element {
   return (
     <div className="flex items-center gap-2">
       <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 grid place-items-center text-white shadow">

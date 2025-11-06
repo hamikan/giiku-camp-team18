@@ -23,12 +23,10 @@ import {
 } from "@/types/type"
 
 import{
-    Card
-} from "@dashbord/page"
-
-import{
+    Card,
     Badge
-} from "@tasklist/page"
+} from "@/app/(main)/dashboard/page";
+
 type HistoryProps = {
   tasks: Task[];
   completed: Task[];
@@ -37,7 +35,7 @@ type HistoryProps = {
   onDeleteTask: (id: string) => void;
 };
 
-function History({ tasks, completed, categorySeries, onToggleDone, onDeleteTask }: HistoryProps): JSX.Element {
+export function History({ tasks, completed, categorySeries, onToggleDone, onDeleteTask }: HistoryProps): JSX.Element {
   const byDate = useMemo(() => {
     const map = new Map<string, Task[]>();
     completed.forEach((t) => {
