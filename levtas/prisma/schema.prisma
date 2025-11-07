@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  name           String
+  streak         Int      @default(0)
+  total_complete Int      @default(0)
+  lastCompletedAt DateTime?          // 推奨：streak計算のための最終完了日時
+  posts          Task[]              // relation: User has many Tasks
+  createdAt      DateTime @default(now())
+}
+
+model Task {
+  id                 Int       @id @default(autoincrement())
+  title              String
+  category           String
+  priority           Priority   @default(MID)
+  difficulty         Int
+  status             Status     @default(TODO)
+  createdAt          DateTime   @default(now())
+  completedAt        DateTime?                 // optional
+  totalTimesCompleted Int      @default(0)
+  user               User      @relation(fields: [userId], references: [id])
+  userId             Int
+}
+
+enum Priority {
+  LOW
+  MID
+  HIGH
+}
+
+enum Status {
+  TODO
+  DOING
+  DONE
+}
