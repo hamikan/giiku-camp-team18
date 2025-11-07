@@ -56,36 +56,6 @@ export function History({ tasks, completed, categorySeries, onToggleDone, onDele
 
   return (
     <div className="space-y-6 mt-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card title="カテゴリ別 合計" icon={Filter}>
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} margin={{ left: -20, right: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={24} />
-                <Tooltip contentStyle={{ borderRadius: 12 }} />
-                <Bar dataKey="合計" radius={[6, 6, 0, 0]} fill="#6366f1" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-        <Card title="完了カテゴリ比率" icon={CheckCircle2}>
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={categorySeries} dataKey="value" nameKey="name" outerRadius={80} innerRadius={48}>
-                  {categorySeries.map((_, i) => (
-                    <Cell key={i} fill={["#6366f1", "#f472b6", "#06b6d4", "#22c55e", "#f59e0b"][i % 5]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12 }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
-
       <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold tracking-tight">完了履歴</h3>
