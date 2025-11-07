@@ -213,7 +213,36 @@ function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries,
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       <div className="lg:col-span-2 space-y-6">
         <StatsRow completed={completed} todo={todo} level={level} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+       
+
+        <TaskList title="タスク" tasks={filteredTasks} filters={filters} setFilters={setFilters} onToggleDone={onToggleDone} onDeleteTask={onDeleteTask} categories={["all", ...Array.from(new Set(tasks.map((t) => t.category)))]} />
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <Card title="アチーブメント" icon={Award}>
+          <ul className="space-y-3">
+            <Achievement icon={Flame} label="連続達成" value="3 日" />
+            <Achievement icon={CheckCircle2} label="累計完了" value={`${completed.length} 件`} />
+            {/* 平均クリア時間存在した場所 */}
+          </ul>
+        </Card>
+        <Card title="カテゴリ内訳" icon={Filter}>
+          <div className="h-52">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={categorySeries} dataKey="value" nameKey="name" outerRadius={80} innerRadius={48}>
+                  {categorySeries.map((_, i) => (
+                    <Cell key={i} fill={["#6366f1", "#f472b6", "#06b6d4", "#22c55e", "#f59e0b"][i % 5]} />
+                    ))}
+                </Pie>
+              <Tooltip contentStyle={{ borderRadius: 12 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          </Card>
           <Card title="直近14日の完了数" icon={LineChart}>
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
@@ -233,49 +262,8 @@ function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries,
               </ResponsiveContainer>
             </div>
           </Card>
-          <Card title="カテゴリ内訳" icon={Filter}>
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={categorySeries} dataKey="value" nameKey="name" outerRadius={80} innerRadius={48}>
-                    {categorySeries.map((_, i) => (
-                      <Cell key={i} fill={["#6366f1", "#f472b6", "#06b6d4", "#22c55e", "#f59e0b"][i % 5]} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ borderRadius: 12 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-        </div>
-
-        <TaskList title="タスク" tasks={filteredTasks} filters={filters} setFilters={setFilters} onToggleDone={onToggleDone} onDeleteTask={onDeleteTask} categories={["all", ...Array.from(new Set(tasks.map((t) => t.category)))]} />
       </div>
 
-      <div className="space-y-6">
-        <Card title="アチーブメント" icon={Award}>
-          <ul className="space-y-3">
-            <Achievement icon={Flame} label="連続達成" value="3 日" />
-            <Achievement icon={CheckCircle2} label="累計完了" value={`${completed.length} 件`} />
-            <Achievement icon={Clock3} label="平均クリア時間" value="—" subtle />
-          </ul>
-        </Card>
-
-        <Card title="最近の完了" icon={CheckCircle2}>
-          <ul className="space-y-3">
-            {completed.slice(0, 5).map((t) => (
-              <li key={t.id} className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium leading-tight">{t.title}</div>
-                  <div className="text-xs text-gray-500">{t.category} ・ {formatDate(t.completedAt)}</div>
-                </div>
-                <span className="text-xs rounded-full bg-gray-100 px-2 py-1">難度 {t.difficulty + 1}</span>
-              </li>
-            ))}
-            {completed.length === 0 && <div className="text-sm text-gray-500">まだ完了タスクがありません</div>}
-          </ul>
-        </Card>
-      </div>
     </div>
   );
 }
