@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 // グローバルにインスタンスが存在しない場合のみ、新しく作成する
-export const prisma =
+export const prisma = 
   globalForPrisma.prisma ??
   new PrismaClient({
     log: ['query'], // クエリのログを出力する設定（開発中に便利）

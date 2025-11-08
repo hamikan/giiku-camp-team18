@@ -1,12 +1,10 @@
-// import LevtasUI from "@/app/(main)/dashboard/page";
-import React, { JSX, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useMemo } from "react";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache"; // Next 13.4+ 用
 import {
     Task,
     Level,
     Filters,
-    Priority,
-    Status
 } from "@/types/type"
 
 import { initialTasks } from "@/dummy-data/init"
@@ -23,15 +21,14 @@ import {
 } from "@/components/task-dialog/AddTaskDialog"
 
 function LevtasUI(): JSX.Element {
-  const [activePage, setActivePage] = useState<"dashboard" | "history">("dashboard");
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
-  const [level, setLevel] = useState<Level>({ current: 3, xp: 25, xpForNext: 100 });
-  const [filters, setFilters] = useState<Filters>({ q: "", status: "all", category: "all" });
+  const { Status, Priority } = prisma;
+  const tasks: Task[] = prisma.task;
+
   const [showAdd, setShowAdd] = useState<boolean>(false);
 
   // Derived data
-  const completed = tasks.filter((t) => t.status === "done");
-  const todo = tasks.filter((t) => t.status !== "done");
+  const completed = tasks.filter((t) => t.status === Status.TODO);
+  const todo = tasks.filter((t) => t.status === Status.DONE);
 
   const categories = useMemo<string[]>(() => Array.from(new Set(tasks.map((t) => t.category))), [tasks]);
 
@@ -135,6 +132,7 @@ function LevtasUI(): JSX.Element {
     </div>
   );
 }
+
 export default async function TopPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">

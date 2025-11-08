@@ -10,6 +10,7 @@ export interface Task {
   status: Status;
   createdAt: string;
   completedAt?: string;
+  totalTimesCompleted: number;    
 }
 
 export interface Level {
