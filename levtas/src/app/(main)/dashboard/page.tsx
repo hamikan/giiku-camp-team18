@@ -2,6 +2,7 @@
 import React, { JSX, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TaskList } from "@/components/task-list/tasklist";
+import { Achievement } from "@/components/achivement/achivement";
 import {
   CheckCircle2,
   Gauge,
@@ -107,20 +108,6 @@ function StatsRow({ completed, todo, level }: { completed: Task[]; todo: Task[];
       <MetricCard icon={CheckCircle2} title="完了" value={completed.length} subtitle="今までの合計" />
       <MetricCard icon={Filter} title="未完了" value={todo.length} subtitle="今日の ToDo かも" />
     </div>
-  );
-}
-
-function Achievement({ icon: Icon, label, value, subtle }: { icon: React.ComponentType<any>; label: string; value: string; subtle?: boolean }): JSX.Element {
-  return (
-    <li className="flex items-center justify-between rounded-2xl border border-gray-100 px-3 py-2">
-      <div className="flex items-center gap-2">
-        <div className={classNames("h-8 w-8 grid place-items-center rounded-xl text-white", subtle ? "bg-gray-300" : "bg-gradient-to-br from-orange-400 to-pink-500")}>
-          <Icon className="h-4 w-4" />
-        </div>
-        <span className="text-sm">{label}</span>
-      </div>
-      <span className="text-sm text-gray-600">{value}</span>
-    </li>
   );
 }
 
