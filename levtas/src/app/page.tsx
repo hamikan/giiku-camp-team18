@@ -20,7 +20,7 @@ import {
   AddTaskDialog
 } from "@/components/task-dialog/AddTaskDialog"
 
-function LevtasUI(): JSX.Element {
+function LevtasUI() {
   const { Status, Priority } = prisma;
   const tasks: Task[] = prisma.task;
 

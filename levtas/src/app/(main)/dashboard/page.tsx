@@ -1,6 +1,7 @@
 "use client";
 import React, { JSX, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TaskList } from "@/components/task-list/tasklist";
 import {
   CheckCircle2,
   Gauge,
@@ -54,22 +55,8 @@ import {
 
 export const xpForDifficulty = (diff: number): number => (diff + 1) * 10;
 
-function formatDate(d?: string | number | Date): string {
-  try {
-    if (!d) return "-";
-    const date = typeof d === "string" || typeof d === "number" ? new Date(d) : d;
-    return date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
-  } catch {
-    return "-";
-  }
-}
-
 function classNames(...xs: Array<string | false | null | undefined>): string {
   return xs.filter(Boolean).join(" ");
-}
-
-export function Badge({ children }: { children: React.ReactNode }): JSX.Element {
-  return <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700">{children}</span>;
 }
 
 export function Card({ title, icon: Icon, children }: { title: string; icon: React.ComponentType<any>; children: React.ReactNode }): JSX.Element {
@@ -160,53 +147,6 @@ type TaskListProps = {
   onDeleteTask: (id: string) => void;
   categories: string[];
 };
-
-function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDeleteTask, categories }: TaskListProps): JSX.Element {
-  return (
-    <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h3 className="font-semibold tracking-tight">{title}</h3>
-        <div className="flex flex-wrap items-center gap-2">
-          <input type="text" value={filters.q} onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))} placeholder="検索" className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm" />
-          <Select value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v as Filters["status"] }))} options={[
-            { value: "all", label: "すべて" },
-            { value: "todo", label: "未完了" },
-            { value: "doing", label: "進行中" },
-            { value: "done", label: "完了" },
-          ]} />
-          <Select value={filters.category} onChange={(v) => setFilters((f) => ({ ...f, category: v }))} options={categories.map((c) => ({ value: c, label: c === "all" ? "全カテゴリ" : c }))} />
-        </div>
-      </div>
-
-      <ul className="divide-y divide-gray-100">
-        {tasks.map((t) => (
-          <motion.li key={t.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="py-3 grid sm:grid-cols-[1fr_auto] items-start gap-3">
-            <div className="flex items-start gap-3">
-              <input type="checkbox" checked={t.status === "done"} onChange={() => onToggleDone(t.id)} className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
-              <div>
-                <div className={classNames("font-medium leading-tight", t.status === "done" && "line-through text-gray-400")}>{t.title}</div>
-                <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-2">
-                  <Badge>{t.category}</Badge>
-                  <span>優先度: {PRIORITY[t.priority]}</span>
-                  <span>難度: {t.difficulty + 1}（{DIFF_LABEL[t.difficulty]}）</span>
-                  <span>作成: {formatDate(t.createdAt)}</span>
-                  {t.completedAt && <span>完了: {formatDate(t.completedAt)}</span>}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 justify-self-end">
-              <button onClick={() => onDeleteTask(t.id)} className="p-2 rounded-xl hover:bg-gray-50">
-                <Trash2 className="h-4 w-4 text-gray-500" />
-              </button>
-            </div>
-          </motion.li>
-        ))}
-        {tasks.length === 0 && <div className="text-sm text-gray-500 py-8 text-center">条件に一致するタスクがありません</div>}
-      </ul>
-    </div>
-  );
-}
 
 export function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries, filters, setFilters, filteredTasks, onToggleDone, onDeleteTask }: DashboardProps): JSX.Element {
   return (
