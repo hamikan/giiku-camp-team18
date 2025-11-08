@@ -1,21 +1,17 @@
 "use client";
-import React, { JSX, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { JSX } from "react";
 import { TaskList } from "@/components/task-list/tasklist";
 import { Achievement } from "@/components/achivement/achivement";
+import { MetricCard } from "@/components/metrics/metric";
+import { Card } from "@/components/card/card";
 import {
   CheckCircle2,
   Gauge,
   Flame,
   Award,
-  Plus,
   LineChart,
   History as HistoryIcon,
-  Filter,
-  Trash2,
-  Download,
-  Clock3,
-  Rocket,
+  Filter
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -25,8 +21,6 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -36,70 +30,9 @@ import {
     Task,
     Level,
     Filters,
-    Priority,
-    Status,
-    PRIORITY,
-    DIFF_LABEL
 } from "@/types/type"
 
-import { initialTasks } from "@/dummy-data/init"
-
-import {
-  History
-} from "@/app/(main)/history-page/page"
-
-import Header from "@/components/layout/Header"
-
-import {
-  AddTaskDialog
-} from "@/components/task-dialog/AddTaskDialog"
-
 export const xpForDifficulty = (diff: number): number => (diff + 1) * 10;
-
-function classNames(...xs: Array<string | false | null | undefined>): string {
-  return xs.filter(Boolean).join(" ");
-}
-
-export function Card({ title, icon: Icon, children }: { title: string; icon: React.ComponentType<any>; children: React.ReactNode }): JSX.Element {
-  return (
-    <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="h-8 w-8 grid place-items-center rounded-xl bg-gray-900 text-white">
-          <Icon className="h-4 w-4" />
-        </div>
-        <h3 className="font-semibold tracking-tight">{title}</h3>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function MetricCard({ icon: Icon, title, value, subtitle }: { icon: React.ComponentType<any>; title: string; value: number | string; subtitle?: string }): JSX.Element {
-  return (
-    <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm text-gray-500">{title}</div>
-          <div className="mt-1 text-2xl font-semibold tracking-tight">{value}</div>
-          <div className="text-xs text-gray-500 mt-1">{subtitle}</div>
-        </div>
-        <div className="h-10 w-10 grid place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white shadow">
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Select({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }): JSX.Element {
-  return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm">
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>{o.label}</option>
-      ))}
-    </select>
-  );
-}
 
 function StatsRow({ completed, todo, level }: { completed: Task[]; todo: Task[]; level: Level }): JSX.Element {
   return (
@@ -125,22 +58,11 @@ type DashboardProps = {
   onDeleteTask: (id: string) => void;
 };
 
-type TaskListProps = {
-  title: string;
-  tasks: Task[];
-  filters: Filters;
-  setFilters: (f: Filters | ((prev: Filters) => Filters)) => void;
-  onToggleDone: (id: string) => void;
-  onDeleteTask: (id: string) => void;
-  categories: string[];
-};
-
 export function Dashboard({ tasks, completed, todo, level, dailySeries, categorySeries, filters, setFilters, filteredTasks, onToggleDone, onDeleteTask }: DashboardProps): JSX.Element {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
       <div className="lg:col-span-2 space-y-6">
         <StatsRow completed={completed} todo={todo} level={level} />
-       
 
         <TaskList title="タスク" tasks={filteredTasks} filters={filters} setFilters={setFilters} onToggleDone={onToggleDone} onDeleteTask={onDeleteTask} categories={["all", ...Array.from(new Set(tasks.map((t) => t.category)))]} />
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -190,7 +112,6 @@ export function Dashboard({ tasks, completed, todo, level, dailySeries, category
             </div>
           </Card>
       </div>
-
     </div>
   );
 }
