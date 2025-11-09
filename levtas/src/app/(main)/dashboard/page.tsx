@@ -1,13 +1,14 @@
 // app/(main)/dashboard/page.tsx
+//使うやつをとりあえずimportしている
 import { prisma } from "@/lib/prisma";
 import DashboardClient from "@/components/dashboard/dashboardClient";
 import type { Task } from "@/types/type";
 import { Status } from "@prisma/client";
 import { deriveLevelFromTotalExp } from "@/lib/leveling";
 
-const USER_ID = 1;
+const USER_ID = 1; //ダミーデータ
 
-type Level = { current: number; xp: number; xpForNext: number };
+type Level = { current: number; xp: number; xpForNext: number }; //レベルという型が三つの数値を持っている
 
 export default async function Page() {
   // Userの累計EXPのみ取得
@@ -16,20 +17,22 @@ export default async function Page() {
     select: { exp: true },
   });
 
-  const total = user?.exp ?? 0;
-  const derived = deriveLevelFromTotalExp(total);
-  const level: Level = {
+  const total = user?.exp ?? 0; //userが存在すればuser.expでなければ0が採用される
+  const derived = deriveLevelFromTotalExp(total);//累積経験値からlevelを採用している
+  const level: Level = { //levelをderivedで手に入れたものを代入
     current: derived.level,
     xp: derived.xpIntoLevel,
     xpForNext: derived.xpForNext,
   };
-
+// 「task テーブルから、指定した userId のタスクを全部取り出す。
+// そのとき category（カテゴリ）情報の name も一緒にくっつけて、
+// 作成日が新しい順に並べる」
   const tasksDb = await prisma.task.findMany({
     where: { userId: USER_ID },
     include: { category: { select: { name: true } } },
     orderBy: { createdAt: "desc" },
   });
-
+  //taskDbで手に入れたデータをjavascriptで使えるようにしている
   const tasks: Task[] = tasksDb.map((t) => ({
     id: t.id,
     title: t.title,
@@ -40,7 +43,7 @@ export default async function Page() {
     createdAt: t.createdAt.toISOString(),
     completedAt: t.completedAt?.toISOString(),
   }));
-
+  //filterを使ってStatus.DONEを追加している
   const completed = tasks.filter((t) => t.status === Status.DONE);
 
   const today = new Date();

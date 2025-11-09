@@ -33,9 +33,9 @@ export function Card({
   children: React.ReactNode;
 }): JSX.Element {
   return (
-    <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
+    <div className="rounded-3xl bg-[var(--surface)] border border-[var(--border)] shadow-sm p-5">
       <div className="flex items-center gap-2 mb-3">
-        <div className="h-8 w-8 grid place-items-center rounded-xl bg-gray-900 text-white">
+        <div className="h-8 w-8 grid place-items-center rounded-xl bg-gray-900 text-white dark:bg-[var(--surface-muted)] dark:text-[var(--foreground)]">
           <Icon className="h-4 w-4" />
         </div>
         <h3 className="font-semibold tracking-tight">{title}</h3>
@@ -57,12 +57,12 @@ function MetricCard({
   subtitle?: string;
 }): JSX.Element {
   return (
-    <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
+    <div className="rounded-3xl bg-[var(--surface)] border border-[var(--border)] shadow-sm p-5">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-gray-500">{title}</div>
+          <div className="text-sm text-[var(--text-muted)]">{title}</div>
           <div className="mt-1 text-2xl font-semibold tracking-tight">{value}</div>
-          <div className="text-xs text-gray-500 mt-1">{subtitle}</div>
+          <div className="text-xs text-[var(--text-muted)] mt-1">{subtitle}</div>
         </div>
         <div className="h-10 w-10 grid place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white shadow">
           <Icon className="h-5 w-5" />
@@ -94,19 +94,19 @@ function Achievement({
   subtle?: boolean;
 }): JSX.Element {
   return (
-    <li className="flex items-center justify-between rounded-2xl border border-gray-100 px-3 py-2">
+    <li className="flex items-center justify-between rounded-2xl border border-[var(--border)] px-3 py-2 bg-[var(--surface)]">
       <div className="flex items-center gap-2">
         <div
           className={classNames(
             "h-8 w-8 grid place-items-center rounded-xl text-white",
-            subtle ? "bg-gray-300" : "bg-gradient-to-br from-orange-400 to-pink-500",
+            subtle ? "bg-gray-300 dark:bg-gray-600" : "bg-gradient-to-br from-orange-400 to-pink-500",
           )}
         >
           <Icon className="h-4 w-4" />
         </div>
         <span className="text-sm">{label}</span>
       </div>
-      <span className="text-sm text-gray-600">{value}</span>
+      <span className="text-sm text-[var(--text-muted)]">{value}</span>
     </li>
   );
 }

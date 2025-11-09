@@ -29,7 +29,11 @@ type TaskListProps = {
 // カテゴリ選択を適用する関数
 function Select({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm">
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="px-3 py-2 rounded-xl bg-[var(--control)] border border-[var(--border)] text-sm text-[var(--foreground)]"
+    >
       {options.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
       ))}
@@ -44,7 +48,7 @@ function classNames(...xs: Array<string | false | null | undefined>): string {
 
 // スキルとかリサーチとかを宣言するもの
 export function Badge({ children }: { children: React.ReactNode }) {
-  return <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-700">{children}</span>;
+  return <span className="inline-flex items-center rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] text-[var(--text-muted)]">{children}</span>;
 }
 
 // 日付フォーマット関数
@@ -62,13 +66,19 @@ function formatDate(d?: string | number | Date): string {
 export function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDeleteTask, categories }: TaskListProps) {
   return (
     // 
-    <div className="rounded-3xl bg-white border border-gray-100 shadow-sm p-5">
+    <div className="rounded-3xl bg-[var(--surface)] border border-[var(--border)] shadow-sm p-5">
       {/* 現在のタスク一覧表示画面。title = タスク */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <h3 className="font-semibold tracking-tight">{title}</h3>
         {/* 現在のタスク状態を選択できる。 */}
         <div className="flex flex-wrap items-center gap-2">
-          <input type="text" value={filters.q} onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))} placeholder="検索" className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm" />
+          <input
+            type="text"
+            value={filters.q}
+            onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))}
+            placeholder="検索"
+            className="px-3 py-2 rounded-xl bg-[var(--control)] border border-[var(--border)] text-sm text-[var(--foreground)] placeholder:text-[var(--text-muted)]"
+          />
           <Select value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v as Filters["status"] }))} options={[
             { value: "all", label: "すべて" },
             { value: Status.TODO, label: "未完了" },
@@ -81,14 +91,19 @@ export function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDe
       </div>
 
       {/* 実際のタスク一覧表示 */}
-      <ul className="divide-y divide-gray-100">
+      <ul className="divide-y divide-[var(--border)]">
         {tasks.map((t) => (
           <motion.li key={t.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="py-3 grid sm:grid-cols-[1fr_auto] items-start gap-3">
             <div className="flex items-start gap-3">
-              <input type="checkbox" checked={t.status === Status.DONE} onChange={() => onToggleDone(t.id)} className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
+              <input
+                type="checkbox"
+                checked={t.status === Status.DONE}
+                onChange={() => onToggleDone(t.id)}
+                className="mt-1 h-4 w-4 rounded border-[var(--border)] text-gray-900 focus:ring-gray-900 dark:text-white"
+              />
               <div>
-                <div className={classNames("font-medium leading-tight", t.status === Status.DONE && "line-through text-gray-400")}>{t.title}</div>
-                <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-2">
+                <div className={classNames("font-medium leading-tight", t.status === Status.DONE && "line-through text-[var(--text-muted)]")}>{t.title}</div>
+                <div className="text-xs text-[var(--text-muted)] mt-0.5 flex flex-wrap items-center gap-2">
                   <Badge>{t.category}</Badge>
                   <span>優先度: {PRIORITY[t.priority]}</span>
                   <span>難度: {t.difficulty + 1}（{DIFF_LABEL[t.difficulty]}）</span>
@@ -99,13 +114,13 @@ export function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDe
             </div>
 
             <div className="flex items-center gap-2 justify-self-end">
-              <button onClick={() => onDeleteTask(t.id)} className="p-2 rounded-xl hover:bg-gray-50">
-                <Trash2 className="h-4 w-4 text-gray-500" />
+              <button onClick={() => onDeleteTask(t.id)} className="p-2 rounded-xl hover:bg-[var(--control)]">
+                <Trash2 className="h-4 w-4 text-[var(--text-muted)]" />
               </button>
             </div>
           </motion.li>
         ))}
-        {tasks.length === 0 && <div className="text-sm text-gray-500 py-8 text-center">条件に一致するタスクがありません</div>}
+        {tasks.length === 0 && <div className="text-sm text-[var(--text-muted)] py-8 text-center">条件に一致するタスクがありません</div>}
       </ul>
     </div>
   );
