@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, JSX } from "react";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache"; // Next 13.4+ 用
 import {
@@ -20,11 +20,11 @@ import {
   AddTaskDialog
 } from "@/components/task-dialog/AddTaskDialog"
 
-function LevtasUI(): JSX.Element {
+
+function LevtasUI() {
   const { Status, Priority } = prisma;
   const tasks: Task[] = prisma.task;
-
-  const [showAdd, setShowAdd] = useState<boolean>(false);
+  let showAdd: boolean = false; 
 
   // Derived data
   const completed = tasks.filter((t) => t.status === Status.TODO);
@@ -82,7 +82,7 @@ function LevtasUI(): JSX.Element {
       })
     );
 
-    // level/xp update (simple demo)
+    level/xp update (simple demo)
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
     const gain = task.status === "done" ? -xpForDifficulty(task.difficulty) : xpForDifficulty(task.difficulty);

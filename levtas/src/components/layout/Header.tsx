@@ -1,4 +1,6 @@
-import { JSX } from "react";
+"use client"
+import { JSX, useEffect } from "react";
+import { Moon, Sun } from "lucide-react"; //アイコンの追加
 import { Gauge, Rocket, HistoryIcon, LineChart, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -96,13 +98,37 @@ function Segmented({ options, value, onChange }: SegmentedProps): JSX.Element {
 
 // --------------------------- Header Component ---------------------------
 export default function Header({ active, onChange, onOpenAdd, level }: HeaderProps): JSX.Element {
+  let isDark: Boolean = false;
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    if (saved === "dark" || (!saved && prefersDark)) {
+      document.documentElement.classList.add("dark");
+      isDark = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
   return (
-    <div className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/90 border-b border-gray-100">
+    <div className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/90 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
             <Logo />
-            <span className="hidden sm:inline text-sm text-gray-500">level × task</span>
+            <span className="hidden sm:inline text-sm text-gray-500 dark:text-gray-400">
+              level × task
+            </span>
           </div>
 
           <nav className="flex items-center gap-2">
@@ -118,7 +144,20 @@ export default function Header({ active, onChange, onOpenAdd, level }: HeaderPro
 
           <div className="flex items-center gap-2">
             <LevelBadge level={level} />
-            <button onClick={onOpenAdd} className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow">
+
+            {/* 🌙 ダークモード切り替えボタン */}
+            <button
+              onClick={() => isDark = !isDark}
+              className="p-2 rounded-2xl bg-gray-200 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+
+            {/* ➕ 新しいタスクボタン */}
+            <button
+              onClick={onOpenAdd}
+              className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow dark:bg-white dark:text-gray-900"
+            >
               <Plus className="h-4 w-4" /> 新しいタスク
             </button>
           </div>
@@ -126,4 +165,5 @@ export default function Header({ active, onChange, onOpenAdd, level }: HeaderPro
       </div>
     </div>
   );
+  
 }
