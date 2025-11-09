@@ -8,7 +8,7 @@ import type { $Enums } from "@prisma/client";
 
 type Payload = {
   title: string;
-  priority: $Enums.Priority | "LOW" | "MID" | "HIGH";
+  priority: $Enums.Priority
   difficulty: number;
   category: string;
 };

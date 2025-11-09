@@ -1,7 +1,6 @@
 // src/lib/leveling.ts
 import { Priority } from "@prisma/client";
 
-/** レベルNの必要XP（例: レベル1→100、以後×1.2で増加） */
 export const XP_BASE = 100;
 export const XP_GROWTH = 1.2;
 
@@ -10,54 +9,43 @@ export function capForLevel(level: number): number {
   return Math.round(XP_BASE * Math.pow(XP_GROWTH, lv - 1));
 }
 
-/** 既存UIに合わせた難易度→XP。priorityで倍率をかける */
 export function xpForDifficulty(diff: number): number {
   return (diff + 1) * 10;
 }
 
 export function priorityMultiplier(p: Priority): number {
   switch (p) {
-    case "LOW":
-      return 1;
-    case "MID":
-      return 1.5;
-    case "HIGH":
-      return 2;
-    default:
-      return 1;
+    case Priority.LOW:  return 1;
+    case Priority.MID:  return 1.5;
+    case Priority.HIGH: return 2;
+    default:     return 1;
   }
 }
 
-/** タスク1件で得られるXP（難易度×優先度） */
 export function xpForTask(diff: number, priority: Priority): number {
   return Math.round(xpForDifficulty(diff) * priorityMultiplier(priority));
 }
 
-/** XPの増減を現在の(level, exp)に適用して正規化（レベリング） */
-export function applyXp(
-  currentLevel: number,
-  currentExp: number,
-  deltaXp: number
-): { level: number; exp: number } {
-  let level = Math.max(1, currentLevel || 1);
-  let exp = Math.max(0, currentExp || 0);
+/** 重要：累計EXP(totalExp)から {level, レベル内の残XP, 次必要XP} を導出 */
+export function deriveLevelFromTotalExp(totalExp: number): {
+  level: number;
+  xpIntoLevel: number;  // そのレベル内での現在XP
+  xpForNext: number;    // 次レベル到達に必要なXP
+} {
+  let level = 1;
+  let remaining = Math.max(0, totalExp || 0);
 
-  exp += deltaXp;
-
-  // レベルアップ
-  while (exp >= capForLevel(level)) {
-    exp -= capForLevel(level);
+  while (true) {
+    const cap = capForLevel(level);
+    if (remaining < cap) {
+      return { level, xpIntoLevel: remaining, xpForNext: cap };
+    }
+    remaining -= cap;
     level += 1;
   }
+}
 
-  // レベルダウン（expがマイナスの間）
-  while (exp < 0 && level > 1) {
-    level -= 1;
-    exp += capForLevel(level);
-  }
-
-  // レベル1でさらにマイナスなら0に丸める
-  if (level === 1 && exp < 0) exp = 0;
-
-  return { level, exp };
+/** 差分XPを累計に足してからレベルを再計算したい時用のユーティリティ */
+export function applyTotalXp(totalExp: number, deltaXp: number) {
+  return deriveLevelFromTotalExp(Math.max(0, (totalExp || 0) + deltaXp));
 }

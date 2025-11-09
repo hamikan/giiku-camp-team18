@@ -4,9 +4,9 @@ import ClientShell from "@/app/(main)/ClientShell";
 import { getHeaderProps } from "@/server/queries";
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const userId = 1; // TODO: 認証で取得
-  const { user, categories } = await getHeaderProps(userId); // ← もう string[] で来る
-  const level = { current: user?.level ?? 1, xp: user?.exp ?? 0, xpForNext: 100 };
+  const userId = 1; // TODO: 認証から取得
+  // getHeaderProps は { user, level, categories } を返す実装にしてある前提
+  const { level, categories } = await getHeaderProps(userId);
 
   return (
     <html lang="ja">

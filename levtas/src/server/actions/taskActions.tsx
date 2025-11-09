@@ -1,21 +1,14 @@
-// src/server/actions/taskActions.ts
 "use server";
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { Status, Priority } from "@prisma/client";
-import { xpForTask, applyXp } from "@/lib/leveling";
+import { Status, type Priority } from "@prisma/client";
+import { xpForTask } from "@/lib/leveling";
 
-// 文字列→Prisma enum への正規化マップ
-const PRIORITY_MAP: Record<string, Priority> = {
-  low: Priority.LOW,
-  mid: Priority.MID,
-  high: Priority.HIGH,
-  LOW: Priority.LOW,
-  MID: Priority.MID,
-  HIGH: Priority.HIGH,
-};
-
+/**
+ * タスクの完了/未完了をトグルし、それに応じてユーザーの exp を増減させる。
+ * level は DB に持たないため、exp だけ更新（レベル表示は読み出し側で導出）。
+ */
 export async function toggleTask(id: number) {
   await prisma.$transaction(async (tx) => {
     const task = await tx.task.findUnique({
@@ -24,12 +17,11 @@ export async function toggleTask(id: number) {
     });
     if (!task) return;
 
-    // 今回のトグルで発生するXP
-    const delta = task.status === Status.DONE
-      ? -xpForTask(task.difficulty, task.priority as Priority)
-      : +xpForTask(task.difficulty, task.priority as Priority);
+    // 完了→未完 ならマイナス、未完→完了 ならプラス
+    const sign = task.status === Status.DONE ? -1 : 1;
+    const delta = sign * xpForTask(task.difficulty, task.priority as Priority);
 
-    // タスク側を更新
+    // タスク更新
     await tx.task.update({
       where: { id: task.id },
       data: {
@@ -38,20 +30,17 @@ export async function toggleTask(id: number) {
       },
     });
 
-    // ユーザーの現在レベル/XPを取得
-    const user = await tx.user.findUnique({
+    // exp のみ更新（負にならないように下限 0）
+    const u = await tx.user.findUnique({
       where: { id: task.userId },
-      select: { level: true, exp: true },
+      select: { exp: true },
     });
-    if (!user) throw new Error(`User not found for userId=${task.userId}`);
+    if (!u) throw new Error(`User not found (id=${task.userId})`);
 
-    // XP適用→正規化
-    const { level, exp } = applyXp(user.level, user.exp, delta);
-
-    // ユーザーを更新
+    const nextExp = Math.max(0, u.exp + delta);
     await tx.user.update({
       where: { id: task.userId },
-      data: { level, exp },
+      data: { exp: nextExp },
     });
   });
 
@@ -60,22 +49,23 @@ export async function toggleTask(id: number) {
 }
 
 export async function deleteTask(id: number) {
-  // （任意）完了済みタスクを削除したらXPを減らす運用にしたい場合は
-  // ここでも同様に delta を計算し、applyXp してから削除する。
+  // ※完了済み削除時に XP を戻したい運用なら、ここでも delta を計算して exp を調整する
   await prisma.task.delete({ where: { id } });
   revalidatePath("/dashboard");
   revalidatePath("/history");
 }
 
-/** 既存の createTask はそのままでOK（レベリングはトグル時にのみ） */
+/**
+ * 追加は従来どおり。priority は Prisma の enum を受け取る。
+ */
 export async function createTask(input: {
   userId: number;
   title: string;
-  priority: Priority;          // ここは既にenumで来る想定（小文字なら正規化してから呼ぶ）
+  priority: Priority;      // 小文字が来る場合は呼び出し側で正規化してから渡す
   difficulty: number;
   categoryName: string;
 }) {
-  const user = await prisma.user.findUnique({ where: { id: input.userId } });
+  const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { id: true } });
   if (!user) throw new Error(`User not found (userId=${input.userId})`);
 
   const cat = await prisma.category.upsert({

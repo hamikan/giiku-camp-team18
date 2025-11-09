@@ -1,4 +1,3 @@
-// app/(main)/ClientShell.tsx
 "use client";
 
 import { useState } from "react";
@@ -7,8 +6,8 @@ import Header from "@/components/layout/Header";
 import { AddTaskDialog } from "@/components/task-dialog/AddTaskDialog";
 import type { Level } from "@/types/type";
 import type { ReactNode } from "react";
-import type { $Enums } from "@prisma/client";
-import { createTask } from "@/server/actions/taskActions"; // 既存のサーバーアクション
+import type { Priority } from "@prisma/client";
+import { createTask } from "@/server/actions/taskActions";
 
 export default function ClientShell({
   level,
@@ -24,12 +23,12 @@ export default function ClientShell({
 
   const handleSubmit = async (p: {
     title: string;
-    priority: $Enums.Priority;
+    priority: Priority;
     difficulty: number;
     category: string;
   }) => {
     await createTask({
-      userId: 1, // TODO: 認証と連動
+      userId: 1, // TODO: 認証連動
       title: p.title,
       priority: p.priority,
       difficulty: p.difficulty,
@@ -41,6 +40,7 @@ export default function ClientShell({
 
   return (
     <>
+      {/* onOpenAdd を渡すとヘッダー側でモーダルを開くボタン動作にできます */}
       <Header level={level} categories={categories} onOpenAdd={() => setShowAdd(true)} />
       <main className="mx-auto max-w-6xl px-4 pb-24">{children}</main>
       {showAdd && (

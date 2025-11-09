@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Dashboard from "./DashboardView";
 import { toggleTask, deleteTask } from "@/server/actions/taskActions";
-import { Status } from '@/generated/prisma';
+import { Status } from "@prisma/client";
 
 // あなたの UI 側の型に寄せるため、最低限の型だけ定義
 type Level = { current: number; xp: number; xpForNext: number };

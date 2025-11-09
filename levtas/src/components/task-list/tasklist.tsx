@@ -13,7 +13,7 @@ import {
     DIFF_LABEL
 } from "@/types/type";
 
-import { Status } from '@/generated/prisma';
+import { Status } from "@prisma/client";
 
 // 共通で使うコンポーネント
 type TaskListProps = {

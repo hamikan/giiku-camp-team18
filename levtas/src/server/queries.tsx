@@ -1,23 +1,27 @@
+// src/server/queries.tsx
 import { prisma } from "@/lib/prisma";
-import { capForLevel } from "@/lib/leveling";
+import { deriveLevelFromTotalExp } from "@/lib/leveling";
 
 export async function getHeaderProps(userId: number) {
   const [user, categories] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, level: true, exp: true },
+      select: { name: true, exp: true }, // ← levelは取らない
     }),
     prisma.category.findMany({ select: { name: true }, orderBy: { name: "asc" } }),
   ]);
 
+  const total = user?.exp ?? 0;
+  const derived = deriveLevelFromTotalExp(total);
+
   const level = {
-    current: user?.level ?? 1,
-    xp: user?.exp ?? 0,
-    xpForNext: capForLevel(user?.level ?? 1),
+    current: derived.level,
+    xp: derived.xpIntoLevel,
+    xpForNext: derived.xpForNext,
   };
 
   return {
-    user, // 必要なら返す
+    user,
     level,
     categories: categories.map(c => c.name),
   };

@@ -1,34 +1,6 @@
 "use client";
 import React, { JSX, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  CheckCircle2,
-  Gauge,
-  Flame,
-  Award,
-  Plus,
-  LineChart,
-  History as HistoryIcon,
-  Filter,
-  Trash2,
-  Download,
-  Clock3,
-  Rocket,
-} from "lucide-react";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
 
 import {
     Task,
@@ -38,7 +10,7 @@ import {
     DIFF_LABEL
 } from "@/types/type";
 
-import { Status, Priority } from '@/generated/prisma';
+import { Priority } from "@prisma/client";
 
 type AddTaskDialogProps = {
   onClose: () => void;
@@ -93,7 +65,7 @@ export function AddTaskDialog({ onClose, onSubmit, categories }: AddTaskDialogPr
               </div>
               <div className="grid gap-2">
                 <label className="text-sm text-gray-600">優先度</label>
-                <Select value={priority} onChange={(v) => setPriority(v as Priority)} options={[{ value: "low", label: "低" }, { value: "mid", label: "中" }, { value: "high", label: "高" }]} />
+                <Select value={priority} onChange={(v) => setPriority(v as Priority)} options={[{ value: Priority.LOW, label: "低" }, { value: Priority.MID, label: "中" }, { value: Priority.HIGH, label: "高" }]} />
               </div>
             </div>
             <div className="grid gap-2">
