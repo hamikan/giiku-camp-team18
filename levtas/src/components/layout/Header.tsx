@@ -11,7 +11,7 @@ import type { Level } from "@/types/type";
 type HeaderProps = {
   level: Level;
   categories: string[];
-  onOpenAdd?: () => void; // ← 追加
+  onOpenAdd?: () => void;
 };
 
 function classNames(...xs: Array<string | false | null | undefined>) {

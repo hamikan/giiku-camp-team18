@@ -71,9 +71,9 @@ export function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDe
           <input type="text" value={filters.q} onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))} placeholder="検索" className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-sm" />
           <Select value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v as Filters["status"] }))} options={[
             { value: "all", label: "すべて" },
-            { value: "todo", label: "未完了" },
-            { value: "doing", label: "進行中" },
-            { value: "done", label: "完了" },
+            { value: Status.TODO, label: "未完了" },
+            { value: Status.DOING, label: "進行中" },
+            { value: Status.DOING, label: "完了" },
           ]} />
           {/* カテゴリ場面。例えば宿題とか自己研鑽とかそいう類のやつ */}
           <Select value={filters.category} onChange={(v) => setFilters((f) => ({ ...f, category: v }))} options={categories.map((c) => ({ value: c, label: c === "all" ? "全カテゴリ" : c }))} />

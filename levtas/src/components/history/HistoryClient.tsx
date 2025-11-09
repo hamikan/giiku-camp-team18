@@ -8,10 +8,7 @@ import type { Task } from "@/types/type";
 import { Status } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
-// サーバーアクション（用意済みならこの import を活かす）
 import { toggleTask, deleteTask } from "@/server/actions/taskActions"; 
-// ↑ もしパスが違う場合はあなたの実装に合わせて修正してください。
-// まだ無ければ一旦コメントアウトでも見た目は変わりません（onClick内で no-op にしておく）。
 
 export default function HistoryClient({
   initialTasks,
@@ -32,7 +29,6 @@ export default function HistoryClient({
   const categorySeries = initialCategorySeries;
 
   const onToggleDone = async (id: number) => {
-    // 楽観更新（DONE ↔︎ TODO）
     setTasks((prev) =>
       prev.map((t) =>
         t.id === id
@@ -57,7 +53,6 @@ export default function HistoryClient({
   };
 
   const onDeleteTask = async (id: number) => {
-    // 楽観削除
     setTasks((prev) => prev.filter((t) => t.id !== id));
     try {
       if (typeof deleteTask === "function") {
@@ -80,12 +75,9 @@ export default function HistoryClient({
   );
 }
 
-/* ====== 見た目そのまま（あなたの History UI をそのまま移植） ====== */
-
 function HistoryView({
   tasks,
   completed,
-  categorySeries,
   onToggleDone,
   onDeleteTask,
 }: {
@@ -107,7 +99,6 @@ function HistoryView({
     return rows;
   }, [completed]);
 
-  // （見た目変更なし：未使用でもそのまま計算だけ維持したい場合は残してOK）
   const barData = useMemo(() => {
     const map = new Map<string, number>();
     tasks.forEach((t) => map.set(t.category, (map.get(t.category) || 0) + 1));

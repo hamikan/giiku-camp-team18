@@ -19,16 +19,10 @@ import {
 
 import { Task, Level, Filters } from "@/types/type";
 
-// --------------------------------------------------
-//  ヘルパー（見た目に影響なし）
-// --------------------------------------------------
 function classNames(...xs: Array<string | false | null | undefined>): string {
   return xs.filter(Boolean).join(" ");
 }
 
-// --------------------------------------------------
-//  サブコンポーネント（UIそのまま）
-// --------------------------------------------------
 export function Card({
   title,
   icon: Icon,
@@ -117,9 +111,6 @@ function Achievement({
   );
 }
 
-// --------------------------------------------------
-//  型（あなたの既存の props 形を尊重）
-// --------------------------------------------------
 type DashboardProps = {
   tasks: Task[];
   completed: Task[];

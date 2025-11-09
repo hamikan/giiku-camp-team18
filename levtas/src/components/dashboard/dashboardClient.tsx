@@ -7,7 +7,6 @@ import Dashboard from "./DashboardView";
 import { toggleTask, deleteTask } from "@/server/actions/taskActions";
 import { Status } from "@prisma/client";
 
-// あなたの UI 側の型に寄せるため、最低限の型だけ定義
 type Level = { current: number; xp: number; xpForNext: number };
 
 type UITask = {
@@ -28,7 +27,6 @@ export default function DashboardClient({
   initialLevel,
   initialDailySeries,
   initialCategorySeries,
-  initialCategories, // 使わなくても可（UI側は tasks から生成）
 }: {
   initialTasks: UITask[];
   initialLevel: Level;
@@ -60,34 +58,34 @@ export default function DashboardClient({
   }, [tasks, filters]);
 
   // サーバー更新 + 楽観更新（UI形状はそのまま）
-  const onToggleDone = async (id: number) => {   // ← string → number
+  const onToggleDone = async (id: number) => {
   setTasks(prev => prev.map(t => t.id === id
       ? { ...t,
           status: t.status === Status.DONE ? Status.TODO : Status.DONE,
           completedAt: t.status === Status.DONE ? undefined : new Date().toISOString()
         }
       : t));
-    await toggleTask(id);                         // ← Number(id) 不要
+    await toggleTask(id);
     router.refresh();
   };
 
-  const onDeleteTask = async (id: number) => {   // ← string → number
+  const onDeleteTask = async (id: number) => {
     setTasks(prev => prev.filter(t => t.id !== id));
-    await deleteTask(id);                        // ← Number(id) 不要
+    await deleteTask(id);
     router.refresh();
   };
 
   return (
     <Dashboard
-      tasks={tasks as any}
-      completed={completed as any}
-      todo={todo as any}
-      level={level as any}
-      dailySeries={initialDailySeries as any}
-      categorySeries={initialCategorySeries as any}
-      filters={filters as any}
-      setFilters={setFilters as any}
-      filteredTasks={filteredTasks as any}
+      tasks={tasks}
+      completed={completed}
+      todo={todo}
+      level={level}
+      dailySeries={initialDailySeries}
+      categorySeries={initialCategorySeries}
+      filters={filters}
+      setFilters={setFilters}
+      filteredTasks={filteredTasks}
       onToggleDone={onToggleDone}
       onDeleteTask={onDeleteTask}
     />
