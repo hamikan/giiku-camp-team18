@@ -2,6 +2,8 @@
 "use client";
 
 import type { JSX } from "react";
+import { useEffect } from "react";
+import { Moon, Sun } from "lucide-react"; //アイコンの追加
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Gauge, Rocket, History as HistoryIcon, LineChart, Plus } from "lucide-react";
@@ -67,16 +69,52 @@ export default function Header({ level, categories, onOpenAdd }: HeaderProps): J
   const pathname = usePathname();
   const isDashboard = pathname.startsWith("/dashboard");
   const isHistory = pathname.startsWith("/history");
+   let isDark: Boolean = false;
+  useEffect(() => {
+    const saved = localStorage.getItem("theme");
+    const prefersDark =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
 
+    if (saved === "dark" || (!saved && prefersDark)) {
+      document.documentElement.classList.add("dark");
+      isDark = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
   return (
-    <div className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/90 border-b border-gray-100">
+    <div className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-white/70 bg-white/90 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800">
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex h-16 items-center justify-between">
           {/* 左：ロゴ */}
           <div className="flex items-center gap-3">
             <Logo />
-            <span className="hidden sm:inline text-sm text-gray-500">level × task</span>
+            <span className="hidden sm:inline text-sm text-gray-500 dark:text-gray-400">
+              level × task
+            </span>
           </div>
+           {/* 🌙 ダークモード切り替えボタン */}
+            <button
+              onClick={() => isDark = !isDark}
+              className="p-2 rounded-2xl bg-gray-200 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+
+            {/* ➕ 新しいタスクボタン */}
+            <button
+              onClick={onOpenAdd}
+              className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow dark:bg-white dark:text-gray-900"
+            ></button>
 
           {/* 中央：タブ（URLリンク） */}
           <nav className="flex items-center gap-1 rounded-2xl bg-gray-100 p-1 shadow-inner">
@@ -103,26 +141,13 @@ export default function Header({ level, categories, onOpenAdd }: HeaderProps): J
           {/* 右：レベル & 新規タスク */}
           <div className="flex items-center gap-2">
             <LevelBadge level={level} />
-            {onOpenAdd ? (
-              <button
-                onClick={onOpenAdd}
-                data-categories-count={categories.length}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow"
-              >
-                <Plus className="h-4 w-4" /> 新しいタスク
-              </button>
-            ) : (
-              <Link
-                href="/tasks/new" // フォールバック（使わないなら残っててもOK）
-                data-categories-count={categories.length}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow"
-              >
-                <Plus className="h-4 w-4" /> 新しいタスク
-              </Link>
-            )}
+            <button onClick={onOpenAdd} className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 text-white px-3 py-2 text-sm shadow hover:shadow-md transition-shadow">
+              <Plus className="h-4 w-4" /> 新しいタスク
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
+  
 }
