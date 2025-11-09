@@ -8,13 +8,12 @@ import {
 
 import {
     Task,
-    Level,
     Filters,
-    Priority,
-    Status,
     PRIORITY,
     DIFF_LABEL
-} from "@/types/type"
+} from "@/types/type";
+
+import { Status } from '@/generated/prisma';
 
 // 共通で使うコンポーネント
 type TaskListProps = {
@@ -22,8 +21,8 @@ type TaskListProps = {
   tasks: Task[];
   filters: Filters;
   setFilters: (f: Filters | ((prev: Filters) => Filters)) => void;
-  onToggleDone: (id: string) => void;
-  onDeleteTask: (id: string) => void;
+  onToggleDone: (id: number) => void;
+  onDeleteTask: (id: number) => void;
   categories: string[];
 };
 
@@ -86,9 +85,9 @@ export function TaskList({ title, tasks, filters, setFilters, onToggleDone, onDe
         {tasks.map((t) => (
           <motion.li key={t.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="py-3 grid sm:grid-cols-[1fr_auto] items-start gap-3">
             <div className="flex items-start gap-3">
-              <input type="checkbox" checked={t.status === "done"} onChange={() => onToggleDone(t.id)} className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
+              <input type="checkbox" checked={t.status === Status.DONE} onChange={() => onToggleDone(t.id)} className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
               <div>
-                <div className={classNames("font-medium leading-tight", t.status === "done" && "line-through text-gray-400")}>{t.title}</div>
+                <div className={classNames("font-medium leading-tight", t.status === Status.DONE && "line-through text-gray-400")}>{t.title}</div>
                 <div className="text-xs text-gray-500 mt-0.5 flex flex-wrap items-center gap-2">
                   <Badge>{t.category}</Badge>
                   <span>優先度: {PRIORITY[t.priority]}</span>

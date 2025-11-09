@@ -34,11 +34,11 @@ import {
     Task,
     Level,
     Filters,
-    Priority,
-    Status,
     PRIORITY,
     DIFF_LABEL
-} from "@/types/type"
+} from "@/types/type";
+
+import { Status, Priority } from '@/generated/prisma';
 
 type AddTaskDialogProps = {
   onClose: () => void;
@@ -59,7 +59,7 @@ function Select({ value, onChange, options }: { value: string; onChange: (v: str
 export function AddTaskDialog({ onClose, onSubmit, categories }: AddTaskDialogProps): JSX.Element {
   const [title, setTitle] = useState<string>("");
   const [category, setCategory] = useState<string>(categories[0] || "大学");
-  const [priority, setPriority] = useState<Priority>("mid");
+  const [priority, setPriority] = useState<Priority>(Priority.MID);
   const [difficulty, setDifficulty] = useState<number>(2);
 
   const handleSubmit = (e: React.FormEvent) => {

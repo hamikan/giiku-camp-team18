@@ -1,17 +1,15 @@
-export type Priority = "low" | "mid" | "high";
-export type Status = "todo" | "doing" | "done";
+import { $Enums } from "@prisma/client";
 
-export interface Task {
-  id: string;
+export type Task = {
+  id: number;
   title: string;
+  status: $Enums.Status ;
+  difficulty: number;
+  priority: $Enums.Priority ;
   category: string;
-  priority: Priority;
-  difficulty: number; // 0..4
-  status: Status;
   createdAt: string;
   completedAt?: string;
-  totalTimesCompleted: number;    
-}
+};
 
 export interface Level {
   current: number;
@@ -21,9 +19,9 @@ export interface Level {
 
 export interface Filters {
   q: string;
-  status: "all" | Status;
+  status: "all" | $Enums.Status;
   category: "all" | string;
 }
 
-export const PRIORITY: Record<Priority, string> = { low: "低", mid: "中", high: "高" };
+export const PRIORITY: Record<$Enums.Priority, string> = { LOW: "低", MID: "中", HIGH: "高" };
 export const DIFF_LABEL = ["かんたん", "やさしめ", "ふつう", "むずかしめ", "激ムズ"] as const;
